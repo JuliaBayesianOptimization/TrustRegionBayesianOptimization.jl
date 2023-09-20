@@ -1,6 +1,4 @@
 struct TurboTRConfig{D<:Real}
-    # base side length of a hyperrectangle trust region
-    base_length::D
     length_min::D
     length_max::D
     failure_tolerance::Int
@@ -12,6 +10,8 @@ Maintain the state of one trust region.
 """
 mutable struct TurboTR{D<:Real,R<:Real}
     const config::TurboTRConfig{D}
+    # base side length of a hyperrectangle trust region
+    base_length::D
     # lengths for each dim are rescaled wrt lengthscales in fitted GP while maintaining
     # volume (base_length)^dim
     lengths::Vector{D}
@@ -25,7 +25,7 @@ mutable struct TurboTR{D<:Real,R<:Real}
     tr_is_done::Bool
 end
 
-function is_in_tr( tr::TurboTR, x)
+function is_in_tr(tr::TurboTR, x)
     all(tr.lb .<= x .<= tr.ub)
 end
 
@@ -63,17 +63,17 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales, dimension)
         tr.failure_counter += length(tr_xs)
     end
     # update trust region base_length
-    if tr.success_counter == tr.success_tolerance
+    if tr.success_counter == tr.config.success_tolerance
         # expand TR
-        tr.base_length = min(2.0 * tr.base_length, tr.length_max)
+        tr.base_length = min(2.0 * tr.base_length, tr.config.length_max)
         tr.success_counter = 0
-    elseif tr.failure_counter >= tr.failure_tolerance
+    elseif tr.failure_counter >= tr.config.failure_tolerance
         # shrink TR
         tr.base_length /= 2.0
         tr.failure_counter = 0
     end
     # check for convergence, if we are done, we don't need to update lengths anymore
-    if tr.base_length < tr.length_min
+    if tr.base_length < tr.config.length_min
         tr.tr_is_done = true
     else
         # update lengths wrt updated lengthscales

@@ -1,0 +1,7 @@
+[deps]
+AbstractBayesianOptimization = "2373dd1e-08ed-4383-a469-c79326ce36aa"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+SurrogatesAbstractGPs = "33be2161-7346-47fb-b0e0-58e78e942ca1"
+SurrogatesBase = "89f642e6-4179-4274-8202-c11f4bd9a72c"
+TrustRegionBayesianOptimization = "b798f86f-5fa2-4fcd-a5c1-3fd0da84cdd0"

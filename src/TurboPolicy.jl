@@ -9,12 +9,20 @@ struct TurboPolicy{T<:Real} <: AbstractPolicy
 end
 
 # default values from the TuRBO paper
-function TurboPolicy(oh::OptimizationHelper; candidate_size = min(100 * get_dimension(oh), 5000), prob_of_perturbation = min(20.0 / get_dimension(oh), 1))
-   return  TurboPolicy(candidate_size, prob_of_perturbation)
+function TurboPolicy(
+    oh::OptimizationHelper;
+    candidate_size = min(100 * get_dimension(oh), 5000),
+    prob_of_perturbation = min(20.0 / get_dimension(oh), 1),
+)
+    return TurboPolicy(candidate_size, prob_of_perturbation)
 end
 
 # Thompson sample across trust regions
-function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,  dsm::Turbo{J,D,R}, oh::OptimizationHelper) where {J, D <:Real, R<:Real}
+function AbstractBayesianOptimization.next_batch!(
+    policy::TurboPolicy,
+    dsm::Turbo{J,D,R},
+    oh::OptimizationHelper,
+) where {J,D<:Real,R<:Real}
     @assert D == get_domain_eltype(oh)
     @assert R == get_range_type(oh)
 
@@ -25,8 +33,13 @@ function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,  dsm::Tur
         combined_xs = Vector{Vector{D}}()
         combined_ys = Vector{R}()
         for i = 1:(dsm.n_surrogates)
-            tr_xs =
-                turbo_policy_seq(dsm, policy.candidate_size, policy.prob_of_perturbation, get_dimension(oh), i)
+            tr_xs = turbo_policy_seq(
+                dsm,
+                policy.candidate_size,
+                policy.prob_of_perturbation,
+                get_dimension(oh),
+                i,
+            )
             tr_ys = rand(dsm.surrogates[i], tr_xs)
             append!(combined_xs, tr_xs)
             append!(combined_ys, tr_ys)
@@ -36,19 +49,16 @@ function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,  dsm::Tur
     return next_points
 end
 
-function turbo_policy_seq(dsm::Turbo, candidate_size, prob_of_perturbation, dimension, i)
-    xs = []
+function turbo_policy_seq(dsm::Turbo{J, D}, candidate_size, prob_of_perturbation, dimension, i) where {J, D}
+    xs = Vector{Vector{D}}()
     # following the construction from the paper: supplement material part D; and python implementation
     for perturbation in (
-        from_unit_cube(
-            next!(dsm.sobol_generator),
-            dsm.trs[i].lb,
-            dsm.trs[i].ub,
-        ) for _ = 1:candidate_size
+        from_unit_cube(next!(dsm.sobol_generator), dsm.trs[i].lb, dsm.trs[i].ub) for
+        _ = 1:candidate_size
     )
         x = copy(dsm.trs[i].center)
         # each index is chosen with probability prob_of_perturbation
-        for k in 1:dimension
+        for k = 1:dimension
             if rand() <= prob_of_perturbation
                 x[k] = perturbation[k]
             end

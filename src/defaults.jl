@@ -15,14 +15,14 @@ end
 # noise_var is passed into AbstractGPs directly, not via a kernel
 function kernel_creator(hyperparameters)
     return hyperparameters.signal_var *
-    with_lengthscale(KernelFunctions.Matern52Kernel(), hyperparameters.lengthscales)
+           with_lengthscale(KernelFunctions.Matern52Kernel(), hyperparameters.lengthscales)
 end
 
+const DEFAULT_INIT_BASE_LENGTH = 0.8
 function compute_tr_config(dimension, batch_size)
     # Original paper: failure_tolerance = Int(ceil(dimension / batch_size)),
     # here we set failure_tolerance as in https://botorch.org/tutorials/turbo_1
     return TurboTRConfig(
-        0.8, #base_length
         2^(-7), #length_min
         1.6, # length_max
         Int(ceil(max(4.0 / batch_size, dimension / batch_size))), # failure_tolerance
