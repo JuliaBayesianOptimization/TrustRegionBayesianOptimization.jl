@@ -1,6 +1,10 @@
 include("TurboTR.jl")
 include("../defaults.jl")
 
+mutable struct TurboState
+    is_done::Bool
+end
+
 """
 `TuRBO` with an `GPSurrogate` local model.
 
@@ -8,6 +12,7 @@ We assume that the domain is `[0,1]^dim` and we are maximizing.
 """
 struct Turbo{J,D<:Real,R<:Real} <: AbstractDecisionSupportModel
     oh::OptimizationHelper
+    state::TurboState
     # number of surrogates
     n_surrogates::Int
     batch_size::Int
@@ -27,12 +32,11 @@ struct Turbo{J,D<:Real,R<:Real} <: AbstractDecisionSupportModel
     trs::Vector{TurboTR{D,R}}
 end
 
-
 """
-Turbo is never deliberately stopping the optimization loop.
+Turbo will deliberately stop the optimization loop if it has no evaluation budget left for
+initialization of a restarted trust region.
 """
-AbstractBayesianOptimization.is_done(dsm::Turbo; verbose = true) = false
-
+AbstractBayesianOptimization.is_done(dsm::Turbo; verbose = true) = dsm.state.is_done
 
 # TODO: document: compute_θ_initial has to include lengthscales hyperparameters
 # kernel_creator, compute_θ_initial from defaults.jl
@@ -63,6 +67,7 @@ function Turbo(
 
     return Turbo(
         oh,
+        TurboState(false),
         n_surrogates,
         batch_size,
         n_init_for_local,
@@ -84,8 +89,8 @@ function AbstractBayesianOptimization.initialize!(dsm::Turbo, oh::OptimizationHe
     return nothing
 end
 
-function evaluation_budget_for(n, oh::OptimizationHelper)
-    return get_max_evaluations(oh) - get_evaluation_counter(oh) >= n
+function is_evaluation_budget_for(n, oh::OptimizationHelper)
+    return n <= get_max_evaluations(oh) - get_evaluation_counter(oh)
 end
 
 """
@@ -94,8 +99,11 @@ Initialize i-th local model and its trust region.
 We use it also for restarting a TR after its convergence.
 """
 function initialize_local!(dsm::Turbo{J,D,R}, oh::OptimizationHelper, i) where {J,D,R}
-    evaluation_budget_for(dsm.n_init_for_local, oh) ||
-        throw(ErrorException("cannot initialize, no evaluation budget left"))
+    if ! is_evaluation_budget_for(dsm.n_init_for_local, oh)
+        dsm.state.is_done = true
+        dsm.verbose || @info "Cannot initialize new trust region, no evaluation budget left."
+        return nothing
+    end
 
     # TODO: make initial sampler a parameter of Turbo
     init_xs = [next!(dsm.sobol_generator) for _ = 1:(dsm.n_init_for_local)]
