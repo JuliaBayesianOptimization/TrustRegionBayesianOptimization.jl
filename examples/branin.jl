@@ -47,8 +47,8 @@ function p()
     plt =
         contour(-15:0.1:15, -15:0.1:15, (x, y) -> -branin([x, y]), levels = 80, fill = true)
     plt = scatter!(
-        (x -> x[1]).(get_hist(oh)[1]),
-        (x -> x[2]).(get_hist(oh)[1]),
+        (x -> x[1]).(history(oh)[1]),
+        (x -> x[2]).(history(oh)[1]),
         label = "eval. hist",
     )
     plt = scatter!(
@@ -59,8 +59,8 @@ function p()
         shape = :diamond,
     )
     plt = scatter!(
-        [get_solution(oh)[1][1]],
-        [get_solution(oh)[1][2]],
+        [solution(oh)[1][1]],
+        [solution(oh)[1][2]],
         label = "observed min.",
         shape = :rect,
     )
@@ -86,5 +86,5 @@ optimize!(dsm, policy, oh)
 # savefig(p(), "plot_after_optimization.png")
 display(p())
 
-observed_dist = minimum((m -> norm(get_solution(oh)[1] .- m)).(mins))
-observed_regret = abs(get_solution(oh)[2] - fmin)
+observed_dist = minimum((m -> norm(solution(oh)[1] .- m)).(mins))
+observed_regret = abs(solution(oh)[2] - fmin)

@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/samuelbelko/TrustRegionBayesianOptimization.jl/actions/workflows/CI.yml/badge.svg?branch=)](https://github.com/samuelbelko/TrustRegionBayesianOptimization.jl/actions/workflows/CI.yml?query=branch%3A)
 
-This package contains an implementation of Trust Region Bayesian Optimization (TuRBO) algorithm.
+This package provides an implementation of Trust Region Bayesian Optimization (TuRBO) algorithm.
 
 
 ## Credits

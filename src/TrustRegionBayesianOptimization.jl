@@ -14,7 +14,6 @@ using AbstractBayesianOptimization
 using SurrogatesAbstractGPs
 using ParameterHandling
 using KernelFunctions
-# TODO: change to QuasiMonteCarlo samplers
 using Sobol
 
 
@@ -22,7 +21,7 @@ using Sobol
 export Turbo, TurboPolicy
 export initialize!, optimize!, next_batch!
 # helper utilities from AbstractBayesianOptimization
-export OptimizationHelper, Min, Max, get_hist, get_solution
+export OptimizationHelper, Min, Max, history, solution
 
 include("DecisionSupportModel/Turbo.jl")
 include("TurboPolicy.jl")

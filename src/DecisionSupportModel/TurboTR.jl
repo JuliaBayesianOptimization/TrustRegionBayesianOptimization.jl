@@ -22,7 +22,7 @@ mutable struct TurboTR{D<:Real,R<:Real}
     success_counter::Int
     observed_maximizer::Vector{D}
     observed_maximum::R
-    tr_is_done::Bool
+    tr_isdone::Bool
 end
 
 function is_in_tr(tr::TurboTR, x)
@@ -43,7 +43,7 @@ function compute_lengths(base_length, lengthscales, dimension)
 end
 
 """
-Update TR state - success and failure counters, base_length, lengths, tr_is_done.
+Update TR state - success and failure counters, base_length, lengths, tr_isdone.
 """
 function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales, dimension)
     @assert length(tr_xs) == length(tr_ys)
@@ -74,7 +74,7 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales, dimension)
     end
     # check for convergence, if we are done, we don't need to update lengths anymore
     if tr.base_length < tr.config.length_min
-        tr.tr_is_done = true
+        tr.tr_isdone = true
     else
         # update lengths wrt updated lengthscales
         tr.lengths = compute_lengths(tr.base_length, lengthscales, dimension)

@@ -11,8 +11,8 @@ end
 # default values from the TuRBO paper
 function TurboPolicy(
     oh::OptimizationHelper;
-    candidate_size = min(100 * get_dimension(oh), 5000),
-    prob_of_perturbation = min(20.0 / get_dimension(oh), 1),
+    candidate_size = min(100 * dimension(oh), 5000),
+    prob_of_perturbation = min(20.0 / dimension(oh), 1),
 )
     return TurboPolicy(candidate_size, prob_of_perturbation)
 end
@@ -20,11 +20,11 @@ end
 # Thompson sample across trust regions
 function AbstractBayesianOptimization.next_batch!(
     policy::TurboPolicy,
-    dsm::Turbo{J,D,R},
+    dsm::Turbo{D,R},
     oh::OptimizationHelper,
-) where {J,D<:Real,R<:Real}
-    @assert D == get_domain_eltype(oh)
-    @assert R == get_range_type(oh)
+) where {D<:Real,R<:Real}
+    @assert D == domain_eltype(oh)
+    @assert R == range_type(oh)
 
     next_points = Vector{Vector{D}}(undef, dsm.batch_size)
     for j = 1:(dsm.batch_size)
@@ -37,7 +37,7 @@ function AbstractBayesianOptimization.next_batch!(
                 dsm,
                 policy.candidate_size,
                 policy.prob_of_perturbation,
-                get_dimension(oh),
+                dimension(oh),
                 i,
             )
             tr_ys = rand(dsm.surrogates[i], tr_xs)
@@ -49,7 +49,13 @@ function AbstractBayesianOptimization.next_batch!(
     return next_points
 end
 
-function turbo_policy_seq(dsm::Turbo{J, D}, candidate_size, prob_of_perturbation, dimension, i) where {J, D}
+function turbo_policy_seq(
+    dsm::Turbo{D},
+    candidate_size,
+    prob_of_perturbation,
+    dimension,
+    i,
+) where {D}
     xs = Vector{Vector{D}}()
     # following the construction from the paper: supplement material part D; and python implementation
     for perturbation in (
