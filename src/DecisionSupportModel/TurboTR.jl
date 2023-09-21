@@ -1,4 +1,4 @@
-struct TurboTRConfig{D<:Real}
+struct TurboTRConfig{D <: Real}
     length_min::D
     length_max::D
     failure_tolerance::Int
@@ -8,7 +8,7 @@ end
 """
 Maintain the state of one trust region.
 """
-mutable struct TurboTR{D<:Real,R<:Real}
+mutable struct TurboTR{D <: Real, R <: Real}
     const config::TurboTRConfig{D}
     # base side length of a hyperrectangle trust region
     base_length::D

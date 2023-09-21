@@ -16,7 +16,6 @@ using ParameterHandling
 using KernelFunctions
 using Sobol
 
-
 # building blocks: decision support model & policy
 export Turbo, TurboPolicy
 export initialize!, optimize!, next_batch!
