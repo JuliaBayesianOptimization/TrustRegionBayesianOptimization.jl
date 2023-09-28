@@ -93,6 +93,7 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
         return nothing
     end
 
+    # TODO: pass iterator inside evaluate_objective?
     init_xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
     init_ys = evaluate_objective!(oh, init_xs)
 
