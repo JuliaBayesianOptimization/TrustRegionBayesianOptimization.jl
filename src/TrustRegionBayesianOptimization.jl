@@ -14,6 +14,9 @@ using AbstractBayesianOptimization
 using SurrogatesAbstractGPs
 using ParameterHandling
 using KernelFunctions
+
+# TODO: switch to QuasiMonteCarlo
+# but does QuasiMonteCarlo support next!(..) interface???
 using Sobol
 
 # building blocks: decision support model & policy
