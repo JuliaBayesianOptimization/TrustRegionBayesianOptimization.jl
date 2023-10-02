@@ -52,8 +52,7 @@ function turbo_policy_seq(dsm::Turbo{D},
     # following the construction from the paper: supplement material part D; and python implementation
     for perturbation in (from_unit_cube(next!(dsm.sobol_generator),
         dsm.trs[i].lb,
-        dsm.trs[i].ub) for
-                         _ in 1:candidate_size)
+        dsm.trs[i].ub) for _ in 1:candidate_size)
         x = copy(dsm.trs[i].center)
         # each index is chosen with probability prob_of_perturbation
         for k in 1:dimension
