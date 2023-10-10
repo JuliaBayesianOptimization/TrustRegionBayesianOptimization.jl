@@ -6,7 +6,7 @@ project_hash = "0b3fe584ad6ac1420b06fc48cfc00ccc6de8c32b"
 
 [[deps.AbstractBayesianOptimization]]
 deps = ["Printf"]
-git-tree-sha1 = "1656c6237b0ce573e58ff61f2177a29c9c9ed3ce"
+git-tree-sha1 = "b289e8aa35970105dc0e8d6689779690fc505507"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaBayesianOptimization/AbstractBayesianOptimization.jl.git"
 uuid = "2373dd1e-08ed-4383-a469-c79326ce36aa"
@@ -667,7 +667,7 @@ version = "5.10.1+6"
 
 [[deps.SurrogatesAbstractGPs]]
 deps = ["AbstractGPs", "KernelFunctions", "Optim", "ParameterHandling", "SurrogatesBase", "Zygote"]
-git-tree-sha1 = "0264983d806e5cc0caa7decc6f9d6cb0e5e278a5"
+git-tree-sha1 = "0eb851114acf216ad2ab2214ae12fd0644580e4a"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaBayesianOptimization/SurrogatesAbstractGPs.jl.git"
 uuid = "33be2161-7346-47fb-b0e0-58e78e942ca1"
