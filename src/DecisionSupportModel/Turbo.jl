@@ -10,7 +10,7 @@ end
 
 We assume that the domain is `[0,1]^dim` and we are maximizing.
 """
-struct Turbo{D<:Real,R<:Real,J} <: AbstractDecisionSupportModel
+struct Turbo{D <: Real, R <: Real, J} <: AbstractDecisionSupportModel
     oh::OptimizationHelper
     state::TurboState
     # number of surrogates
@@ -27,8 +27,8 @@ struct Turbo{D<:Real,R<:Real,J} <: AbstractDecisionSupportModel
     sobol_generator::J
     # TODO: verbosity levels?
     verbose::Bool
-    surrogates::Vector{GPSurrogate{Vector{D},R}}
-    trs::Vector{TurboTR{D,R}}
+    surrogates::Vector{GPSurrogate{Vector{D}, R}}
+    trs::Vector{TurboTR{D, R}}
 end
 
 """
@@ -39,23 +39,18 @@ AbstractBayesianOptimization.isdone(dsm::Turbo) = dsm.state.isdone
 
 # TODO: document: compute_θ_initial has to include lengthscales hyperparameters
 # kernel_creator, compute_θ_initial from defaults.jl
-function Turbo(
-    oh::OptimizationHelper,
+function Turbo(oh::OptimizationHelper,
     n_surrogates,
     batch_size,
     n_init_for_local;
-    kernel_creator=kernel_creator,
-    θ_initial=compute_θ_initial(dimension(oh)),
-    tr_config::TurboTRConfig{U}=compute_tr_config(dimension(oh), batch_size),
-    verbose=true,
-) where {U}
+    kernel_creator = kernel_creator,
+    θ_initial = compute_θ_initial(dimension(oh)),
+    tr_config::TurboTRConfig{U} = compute_tr_config(dimension(oh), batch_size),
+    verbose = true,) where {U}
     D = domain_eltype(oh)
     R = range_type(oh)
-    U == D || throw(
-        ErrorException(
-            "tr_config has to use parameteric type that coincides with the type of elements in the domain, as provided in optimization helper",
-        ),
-    )
+    U == D ||
+        throw(ErrorException("tr_config has to use parameteric type that coincides with the type of elements in the domain, as provided in optimization helper"))
 
     # TODO: how many samples do we need to skip for Sobol for better uniformity?
     # -> Move to QuasiMonteCarlo
@@ -63,8 +58,7 @@ function Turbo(
     # skip first 2^10 -1 samples
     skip(sobol_gen, 10)
 
-    return Turbo(
-        oh,
+    return Turbo(oh,
         TurboState(false),
         n_surrogates,
         batch_size,
@@ -74,9 +68,8 @@ function Turbo(
         tr_config,
         sobol_gen,
         verbose,
-        Vector{GPSurrogate{Vector{D},R}}(undef, n_surrogates),
-        Vector{TurboTR{D,R}}(undef, n_surrogates),
-    )
+        Vector{GPSurrogate{Vector{D}, R}}(undef, n_surrogates),
+        Vector{TurboTR{D, R}}(undef, n_surrogates))
 end
 
 function AbstractBayesianOptimization.initialize!(dsm::Turbo, oh::OptimizationHelper)
@@ -104,12 +97,10 @@ function initialize_local!(dsm, oh, i)
     init_xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
     init_ys = evaluate_objective!(oh, init_xs)
 
-    dsm.surrogates[i] = GPSurrogate(
-        init_xs,
+    dsm.surrogates[i] = GPSurrogate(init_xs,
         init_ys;
-        kernel_creator=dsm.kernel_creator,
-        hyperparameters=ParameterHandling.value(dsm.θ_initial),
-    )
+        kernel_creator = dsm.kernel_creator,
+        hyperparameters = ParameterHandling.value(dsm.θ_initial),)
     dsm.verbose && @info @sprintf "initialized surrogate %2i" i
 
     update_hyperparameters!(dsm.surrogates[i], BoundedHyperparameters(dsm.θ_initial))
@@ -118,16 +109,13 @@ function initialize_local!(dsm, oh, i)
     # TODO: in noisy observations, set center to max. of posterior mean
     # set center to observed maximizer, observed in a local model
     center = init_xs[argmax(init_ys)]
-    lengths = compute_lengths(
-        DEFAULT_INIT_BASE_LENGTH,
+    lengths = compute_lengths(DEFAULT_INIT_BASE_LENGTH,
         dsm.surrogates[i].hyperparameters.lengthscales,
-        dimension(oh),
-    )
+        dimension(oh))
     # method from TurboTR.jl
     lb, ub = compute_lb_ub(center, lengths)
 
-    dsm.trs[i] = TurboTR(
-        dsm.tr_config,
+    dsm.trs[i] = TurboTR(dsm.tr_config,
         DEFAULT_INIT_BASE_LENGTH,
         lengths,
         center,
@@ -137,8 +125,7 @@ function initialize_local!(dsm, oh, i)
         0,
         init_xs[argmax(init_ys)],
         maximum(init_ys),
-        false,
-    )
+        false)
     dsm.verbose && @info @sprintf "initialized tr %2i" i
     return nothing
 end
@@ -160,19 +147,16 @@ function AbstractBayesianOptimization.update!(dsm::Turbo, oh::OptimizationHelper
             # add points in i-th trust region to i-th surrogate
             add_point!(dsm.surrogates[i], tr_xs, tr_ys)
             # each time we add a batch of points, run hyperparameter optimization
-            update_hyperparameters!(
-                dsm.surrogates[i], BoundedHyperparameters(dsm.θ_initial)
-            )
+            update_hyperparameters!(dsm.surrogates[i],
+                BoundedHyperparameters(dsm.θ_initial))
             dsm.verbose && @info @sprintf "hyperparmeter optimization run on %2i" i
             # update corresponding TR - counters, base_length, lengths, tr_isdone
             @assert !isempty(tr_ys)
-            update_TR!(
-                dsm.trs[i],
+            update_TR!(dsm.trs[i],
                 tr_xs,
                 tr_ys,
                 dsm.surrogates[i].hyperparameters.lengthscales,
-                dimension(oh),
-            )
+                dimension(oh))
         end
         # restart TR if it converged
         if dsm.trs[i].tr_isdone
