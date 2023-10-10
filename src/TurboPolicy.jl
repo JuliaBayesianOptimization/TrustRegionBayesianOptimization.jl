@@ -1,7 +1,7 @@
 """
 A policy from TuRBO algorithm for deciding where to sample next.
 """
-struct TurboPolicy{T <: Real} <: AbstractPolicy
+struct TurboPolicy{T<:Real} <: AbstractPolicy
     # for each TR use candidate_size many points to approximate a sample function
     # drawn from the posterior (Thompson sample)
     candidate_size::Int
@@ -9,16 +9,18 @@ struct TurboPolicy{T <: Real} <: AbstractPolicy
 end
 
 # default values from the TuRBO paper
-function TurboPolicy(oh::OptimizationHelper;
-    candidate_size = min(100 * dimension(oh), 5000),
-    prob_of_perturbation = min(20.0 / dimension(oh), 1))
+function TurboPolicy(
+    oh;
+    candidate_size=min(100 * dimension(oh), 5000),
+    prob_of_perturbation=min(20.0 / dimension(oh), 1),
+)
     return TurboPolicy(candidate_size, prob_of_perturbation)
 end
 
 # Thompson sample across trust regions
-function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,
-    dsm::Turbo{D, R},
-    oh::OptimizationHelper) where {D <: Real, R <: Real}
+function AbstractBayesianOptimization.next_batch!(
+    policy::TurboPolicy, dsm::Turbo{D,R}, oh
+) where {D<:Real,R<:Real}
     @assert D == domain_eltype(oh)
     @assert R == range_type(oh)
 
@@ -29,11 +31,9 @@ function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,
         combined_xs = Vector{Vector{D}}()
         combined_ys = Vector{R}()
         for i in 1:(dsm.n_surrogates)
-            tr_xs = turbo_policy_seq(dsm,
-                policy.candidate_size,
-                policy.prob_of_perturbation,
-                dimension(oh),
-                i)
+            tr_xs = turbo_policy_seq(
+                dsm, policy.candidate_size, policy.prob_of_perturbation, dimension(oh), i
+            )
             tr_ys = rand(dsm.surrogates[i], tr_xs)
             append!(combined_xs, tr_xs)
             append!(combined_ys, tr_ys)
@@ -43,16 +43,13 @@ function AbstractBayesianOptimization.next_batch!(policy::TurboPolicy,
     return next_points
 end
 
-function turbo_policy_seq(dsm::Turbo{D},
-    candidate_size,
-    prob_of_perturbation,
-    dimension,
-    i) where {D}
+function turbo_policy_seq(dsm::Turbo{D}, candidate_size, prob_of_perturbation, dimension, i) where {D}
     xs = Vector{Vector{D}}()
     # following the construction from the paper: supplement material part D; and python implementation
-    for perturbation in (from_unit_cube(next!(dsm.sobol_generator),
-        dsm.trs[i].lb,
-        dsm.trs[i].ub) for _ in 1:candidate_size)
+    for perturbation in (
+        from_unit_cube(next!(dsm.sobol_generator), dsm.trs[i].lb, dsm.trs[i].ub) for
+        _ in 1:candidate_size
+    )
         x = copy(dsm.trs[i].center)
         # each index is chosen with probability prob_of_perturbation
         for k in 1:dimension

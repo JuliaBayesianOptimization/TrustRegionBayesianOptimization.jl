@@ -1081,7 +1081,7 @@ version = "5.10.1+6"
 
 [[deps.SurrogatesAbstractGPs]]
 deps = ["AbstractGPs", "KernelFunctions", "Optim", "ParameterHandling", "SurrogatesBase", "Zygote"]
-git-tree-sha1 = "3f61d881227ede7007387e4c4f4ae7b343e18dba"
+git-tree-sha1 = "0264983d806e5cc0caa7decc6f9d6cb0e5e278a5"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaBayesianOptimization/SurrogatesAbstractGPs.jl.git"
 uuid = "33be2161-7346-47fb-b0e0-58e78e942ca1"

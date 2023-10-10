@@ -26,24 +26,21 @@ minima(::typeof(rosenbrock)) = [[1, 1]], 0
 mins, fmin = minima(rosenbrock)
 
 function p()
-    plt = contour(-2:0.1:2,
-        -1:0.1:2,
-        (x, y) -> -rosenbrock([x, y]),
-        levels = 500,
-        fill = true)
-    plt = scatter!((x -> x[1]).(history(oh)[1]),
-        (x -> x[2]).(history(oh)[1]),
-        label = "eval. hist")
-    plt = scatter!((x -> x[1]).(mins),
-        (y -> y[2]).(mins),
-        label = "true minima",
-        markersize = 10,
-        shape = :diamond)
-    plt = scatter!([solution(oh)[1][1]],
-        [solution(oh)[1][2]],
-        label = "observed min.",
-        shape = :rect)
-    plt
+    plt = contour(-2:0.1:2, -1:0.1:2, (x, y) -> -rosenbrock([x, y]); levels=500, fill=true)
+    plt = scatter!(
+        (x -> x[1]).(history(oh)[1]), (x -> x[2]).(history(oh)[1]); label="eval. hist"
+    )
+    plt = scatter!(
+        (x -> x[1]).(mins),
+        (y -> y[2]).(mins);
+        label="true minima",
+        markersize=10,
+        shape=:diamond,
+    )
+    plt = scatter!(
+        [solution(oh)[1][1]], [solution(oh)[1][2]]; label="observed min.", shape=:rect
+    )
+    return plt
 end
 
 # g, sense::Sense, lb, ub, max_evaluations

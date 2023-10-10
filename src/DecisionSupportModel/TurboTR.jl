@@ -1,4 +1,4 @@
-struct TurboTRConfig{D <: Real}
+struct TurboTRConfig{D<:Real}
     length_min::D
     length_max::D
     failure_tolerance::Int
@@ -8,7 +8,7 @@ end
 """
 Maintain the state of one trust region.
 """
-mutable struct TurboTR{D <: Real, R <: Real}
+mutable struct TurboTR{D<:Real,R<:Real}
     const config::TurboTRConfig{D}
     # base side length of a hyperrectangle trust region
     base_length::D
@@ -25,27 +25,27 @@ mutable struct TurboTR{D <: Real, R <: Real}
     tr_isdone::Bool
 end
 
-function is_in_tr(tr::TurboTR, x)
-    all(tr.lb .<= x .<= tr.ub)
+function is_in_tr(tr, x)
+    return all(tr.lb .<= x .<= tr.ub)
 end
 
 function compute_lb_ub(center, lengths)
     # intersection of TR with [0,1]^dim
     lb = max.(0, min.(center .- 1 / 2 .* lengths, 1))
     ub = max.(0, min.(center .+ 1 / 2 .* lengths, 1))
-    lb, ub
+    return lb, ub
 end
 
 function compute_lengths(base_length, lengthscales, dimension)
     # stability trick as in https://github.com/uber-research/TuRBO/blob/de0db39f481d9505bb3610b7b7aa0ebf7702e4a5/turbo/turbo_1.py#L184
     lengthscales = lengthscales ./ (sum(lengthscales) / dimension)
-    lengthscales .* base_length ./ prod(lengthscales)^(1 / dimension)
+    return lengthscales .* base_length ./ prod(lengthscales)^(1 / dimension)
 end
 
 """
 Update TR state - success and failure counters, base_length, lengths, tr_isdone.
 """
-function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales, dimension)
+function update_TR!(tr, tr_xs, tr_ys, lengthscales, dimension)
     @assert length(tr_xs) == length(tr_ys)
     @assert length(tr_xs) != 0
     batch_max = maximum(tr_ys)
